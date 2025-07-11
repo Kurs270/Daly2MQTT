@@ -3,6 +3,13 @@ DALY2MQTT Project
 https://github.com/softwarecrash/DALY2MQTT
 */
 #include "SoftwareSerial.h"
+
+#define USE_SERIAL_FORWARDER
+
+#ifdef USE_SERIAL_FORWARDER
+#include "serialForwarder.h"
+#endif 
+
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
@@ -18,39 +25,7 @@ https://github.com/softwarecrash/DALY2MQTT
 #define ERRORCOUNTER 10 //number of try befor clear data
 
 //time in ms for delay the bms requests, to fast brings connection error
-
-#define DELAYTINME 100
-
-// DON'T edit DEBUG here, edit build_type in platformio.ini !!!
-#ifdef isDEBUG
-#define DEBUG_SERIAL Serial
-#include <WebSerialLite.h>
-#endif
-
-#ifdef DEBUG_SERIAL
-#define BMS_DEBUG_BEGIN(...) DEBUG_SERIAL.begin(__VA_ARGS__)
-#define BMS_DEBUG_PRINT(...) DEBUG_SERIAL.print(__VA_ARGS__)
-#define BMS_DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
-#define BMS_DEBUG_PRINTF(...) DEBUG_SERIAL.printf(__VA_ARGS__)
-#define BMS_DEBUG_WRITE(...) DEBUG_SERIAL.write(__VA_ARGS__)
-#define BMS_DEBUG_PRINTLN(...) DEBUG_SERIAL.println(__VA_ARGS__)
-#define BMS_DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
-#else
-#undef BMS_DEBUG_BEGIN
-#undef BMS_DEBUG_PRINT
-#undef BMS_DEBUG_WEB
-#undef BMS_DEBUG_PRINTF
-#undef BMS_DEBUG_WRITE
-#undef BMS_DEBUG_PRINTLN
-#undef BMS_DEBUG_WEBLN
-#define BMS_DEBBUG_BEGIN(...)
-#define BMS_DEBUG_PRINT(...)
-#define BMS_DEBUG_WEB(...)
-#define BMS_DEBUG_PRINTF(...)
-#define BMS_DEBUG_WRITE(...)
-#define BMS_DEBUG_PRINTLN(...)
-#define BMS_DEBUG_WEBLN(...)
-#endif
+#define DELAYTINME 150
 
 class DalyBms
 {
@@ -64,6 +39,7 @@ public:
     enum COMMAND
     {
         CELL_THRESHOLDS = 0x59,
+        PACK_THRESHOLDS = 0x5A,
         VOUT_IOUT_SOC = 0x90,
         MIN_MAX_CELL_VOLTAGE = 0x91,
         MIN_MAX_TEMPERATURE = 0x92,
@@ -93,6 +69,12 @@ public:
         float maxCellThreshold2; // Level-2 alarm threshold for High Voltage in Millivolts
         float minCellThreshold2; // Level-2 alarm threshold for low Voltage in Millivolts
 
+        // data from 0x5A
+        float maxPackThreshold1; // Level-1 alarm threshold for high voltage in decivolts
+        float minPackThreshold1; // Level-1 alarm threshold for low voltage in decivolts
+        float maxPackThreshold2; // Level-2 alarm threshold for high voltage in decivolts
+        float minPackThreshold2; // Level-2 alarm threshold for low voltage in decivolts
+
         // data from 0x90
         float packVoltage; // pressure (0.1 V)
         float packCurrent; // acquisition (0.1 V)
@@ -113,7 +95,7 @@ public:
         bool chargeFetState;          // charging MOS tube status
         bool disChargeFetState;       // discharge MOS tube state
         int bmsHeartBeat;             // BMS life(0~255 cycles)
-        int resCapacitymAh;           // residual capacity mAH
+        float resCapacityAh;           // residual capacity mAH
 
         // data from 0x94
         unsigned int numberOfCells;    // amount of cells
@@ -252,6 +234,12 @@ public:
      * @return True on successful aquisition, false otherwise
      */
     bool getVoltageThreshold();
+
+    /**
+     * @brief Gets pack voltage thresholds
+     * @return True on successful aquisition, false otherwise
+     */
+    bool getPackVoltageThreshold();
 
     /**
      * @brief Gets the pack temperature from the min and max of all the available temperature sensors
@@ -410,6 +398,10 @@ private:
      * @brief Buffer filled with data from the BMS
      */
     uint8_t my_rxBuffer[XFER_BUFFER_LENGTH];
+
+#ifdef USE_SERIAL_FORWARDER
+    CSerialForwarder *m_pForwarder;
+#endif
 
 
 uint8_t my_rxFrameBuffer[XFER_BUFFER_LENGTH*12];

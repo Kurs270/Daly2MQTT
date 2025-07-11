@@ -2,15 +2,10 @@
 DALY2MQTT Project
 https://github.com/softwarecrash/DALY2MQTT
 */
-#ifdef isDEBUG
-#define DALY_BMS_DEBUG Serial // Uncomment the below #define to enable debugging print statements.
-#include <WebSerialLite.h>
-#define DEBUG_SHOW_HTML
-#endif
 
-#ifndef isDEBUG
-#define DEBUG_SHOW_HTML "display:none;"
-#endif
+#define DEBUG_SERIAL Serial // Uncomment the below #define to enable debugging print statements.
+//include <WebSerialLite.h>
+#include <MycilaWebSerial.h>
 
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
@@ -23,6 +18,8 @@ https://github.com/softwarecrash/DALY2MQTT
 #define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
 
 #define TEMPSENS_PIN 04 // DS18B20 Pin
+#define TIME_INTERVAL 1500 // Time interval among sensor readings [milliseconds]
+//#define DEBUG_DS18B20 // uncomment for Debug
 
 #define RELAISINTERVAL 1000 // interval for relaisHandler()
 #define WAKEUP_DURATION 250 // duration for wakeupHandler()
@@ -43,43 +40,19 @@ https://github.com/softwarecrash/DALY2MQTT
 #endif
 #endif
 
-#define JSON_BUFFER 2048
-#define DEBUG_BAUD 115200
+#define JSON_BUFFER 3027//2304
+#define DBG_BAUD 115200
 
 // DON'T edit version here, place version number in platformio.ini (custom_prog_version) !!!
 #define SOFTWARE_VERSION SWVERSION
-#ifdef DALY_BMS_DEBUG
-#undef SOFTWARE_VERSION
-#define SOFTWARE_VERSION SWVERSION " " HWBOARD " " __DATE__ " " __TIME__
-#endif
 
 #define FlashSize ESP.getFreeSketchSpace()
 
-#ifdef DALY_BMS_DEBUG
-#define DEBUG_BEGIN(...) DALY_BMS_DEBUG.begin(__VA_ARGS__)
-#define DEBUG_END(...) DALY_BMS_DEBUG.end(__VA_ARGS__)
-#define DEBUG_PRINT(...) DALY_BMS_DEBUG.print(__VA_ARGS__)
-#define DEBUG_PRINTF(...) DALY_BMS_DEBUG.printf(__VA_ARGS__)
-#define DEBUG_WRITE(...) DALY_BMS_DEBUG.write(__VA_ARGS__)
-#define DEBUG_PRINTLN(...) DALY_BMS_DEBUG.println(__VA_ARGS__)
-#define DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
-#define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
-#else
-#undef DEBUG_BEGIN
-#undef DEBUG_PRINT
-#undef DEBUG_PRINTF
-#undef DEBUG_WRITE
-#undef DEBUG_PRINTLN
-#undef DEBUG_WEB
-#undef DEBUG_WEBLN
-#define DEBUG_BEGIN(...)
-#define DEBUG_PRINT(...)
-#define DEBUG_PRINTF(...)
-#define DEBUG_WRITE(...)
-#define DEBUG_PRINTLN(...)
-#define DEBUG_WEB(...)
-#define DEBUG_WEBLN(...)
-#endif
+
+#define DBG_BEGIN(...) DEBUG_SERIAL.begin(__VA_ARGS__)
+#define DBG_PRINTLN(...) DEBUG_SERIAL.println(__VA_ARGS__)
+#define DBG_WEBLN(...) webSerial.println(__VA_ARGS__)
+
 
 /**
  * @brief function for uart callback to prozess avaible data
@@ -142,6 +115,18 @@ void notificationLED();
  * @brief function fires up the discovery for HA
  */
 bool sendHaDiscovery();
+
+/**
+ * @brief function for ext. TempSensors
+ */
+void handleTemperatureChange(int deviceIndex, int32_t temperatureRAW);
+
+/**
+ * @brief this function act like s/n/printf() and give the output to the configured serial and webserial
+ *
+ */
+void writeLog(const char* format, ...);
+
 static const char *const haPackDescriptor[][4]{
     {"Device_IP", "ip-network", "", ""},
     {"Wifi_RSSI", "wifi-arrow-up-down", "dB", "signal_strength"},
@@ -151,7 +136,9 @@ static const char *const haPackDescriptor[][4]{
     {"Pack_Current", "current-dc", "A", "current"},
     {"Pack_Power", "home-battery", "W", "power"},
     {"Pack_SOC", "battery-charging-high", "%", "battery"},
-    {"Pack_Remaining_mAh", "battery", "mAh", ""},
+    //{"Pack_Remaining_Ah", "battery", "Ah", "energy_storage"},
+    //{"Pack_Remaining_Ah", "battery", "Ah", ""}, /7remove? HA canot regognize Ah
+    {"Pack_Remaining_kWh", "battery", "kWh", "energy_storage"}, // new
     {"Pack_Cycles", "counter", "", ""},
     {"Pack_BMS_Temperature", "battery", "°C", "temperature"},
     {"Pack_Cell_High", "battery", "", ""},

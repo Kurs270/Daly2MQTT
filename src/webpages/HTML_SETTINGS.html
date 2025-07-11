@@ -6,9 +6,8 @@
 <div class="d-grid gap-2">
   <form id="uploadform">
     <div class="input-group">
-      <input class="form-control" id="uploadformfield" aria-describedby="uploadformfield" aria-label="Upload"
-        accept=".bin" type="file" name="update">
-      <input id="uploadbutton" class="btn btn-outline-secondary" type="button" value="Update" onclick="postFile()">
+      <input class="form-control" id="uploadformfield" aria-describedby="uploadformfield" aria-label="Upload" type="file" accept=".bin.gz" name="update">
+      <input id="uploadbutton" class="btn btn-outline-secondary" type="button" value="Firmware Update" onclick="postFile()">
     </div>
   </form>
 
@@ -23,7 +22,7 @@
   <a class="btn btn-primary" href="/settingsedit" role="button">Configure</a>
   <a class="btn btn-warning" href="/reboot" role="button">Reboot</a>
   <a class="btn btn-primary" href="/confirmreset" role="button">Reset ESP</a>
-  <a class="btn btn-primary" style=" %pre_debug_show% " href="/webserial" role="button" target="_blank">WebSerial</a>
+  <a class="btn btn-primary" href="/webserial" role="button" target="_blank">WebSerial</a>
   <a class="btn btn-primary" href="/" role="button">Back</a>
 </div>
 

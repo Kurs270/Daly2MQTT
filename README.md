@@ -1,5 +1,5 @@
 # Daly2MQTT [![GitHub release](https://img.shields.io/github/release/softwarecrash/Daly2MQTT?include_prereleases=&sort=semver&color=blue)](https://github.com/softwarecrash/Daly2MQTT/releases/latest) [![Discord](https://img.shields.io/discord/1007020337482973254?logo=discord&label=Discord)](https://discord.gg/fb2nZWDExz)
-Little Program for ESP82XX to get the Daly BMS data to web and MQTT
+Little Program for ESP82XX to get the Daly BMS data to web and MQTT 
 
 ### :warning: WARNING: Daly has launched the new WIFI+BT dongles on the market. These differ completely in the pin assignment from the old BT dongle. Both the pin assignment and the power supply (now 12V instead of the previous 3.3V) are different. If you buy a new BMS that comes with a WIFI+BT dongle, NEVER connect the supplied cable to your circuit board. We are currently working on a solution for this.
 
@@ -16,6 +16,7 @@ Little Program for ESP82XX to get the Daly BMS data to web and MQTT
 - universal switching output (only with external power supply, not supported on ESP-01s)
 - [blink codes](https://github.com/softwarecrash/Daly2MQTT/wiki/Blink-Codes) for the current state of the ESP (not supported on ESP-01s)
 - [Homeassistant Discovery](https://github.com/softwarecrash/Daly2MQTT/wiki/HomeAssistant-integration)
+- [External Temperatur Sensors](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring-temperature-sensors)
 - with Teapod
 
 
@@ -43,7 +44,7 @@ Little Program for ESP82XX to get the Daly BMS data to web and MQTT
 
 
 # How to use:
-- flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases) or use the [Online Flash tool](https://softwarecrash.github.io/Daly2MQTT/espflashtool/)
+- flash your ESP8266 (recommended Wemos D1 Mini) with our [Flash2MQTT-Tool](https://all-solutions.github.io/Flash2MQTT/?get=Daly2MQTT) or with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
 - connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring)
 - search for the wifi ap "Daly2MQTT-AP" and connect to it
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
@@ -71,7 +72,7 @@ Little Program for ESP82XX to get the Daly BMS data to web and MQTT
 
 You are welcome to get fully stocked and tested PCB's. These are then already loaded with the lastest firmware. The earnings from the PCBs are used for the further development of existing and new projects.
 
-[![Daly-BMS-MQTT-PCB](https://user-images.githubusercontent.com/17761850/233857094-38f22d6f-4d74-4643-b426-182fc4dc9a44.png)](https://all-solutions.store)
+[![Daly2MQTT-PCB](https://github.com/softwarecrash/Daly2MQTT/assets/17761850/2c7b4ec6-7fe2-4010-824c-5d2c7b48ca70)](https://all-solutions.store)
 
 If interested see [here](https://all-solutions.store)
 
