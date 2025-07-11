@@ -6,3 +6,5 @@
 .vscode
 .firmware
 src/html.h
+src/jslibs
+src/jslibs/*.h
