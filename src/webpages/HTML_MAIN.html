@@ -14,8 +14,8 @@
 <div class="row gx-0 mb-2">
     <div class="col" id="ClickSOC">
         <div class="progress" style="height:1.8rem;">
-            <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;" aria-valuenow="0"
-                aria-valuemin="0" aria-valuemax="100"></div>
+            <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
     </div>
 </div>
@@ -116,6 +116,7 @@
     var alertListitem = 0;
     var kickRefresh = true;
     var dataFields = document.getElementsByClassName("dF");
+    var wifiSvg = '<svg class="wifi-symbol" viewBox="0 15 64 64" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><title id="wifiTitle">WiFi-Signal</title><path id="level5" d="M8 32 A33 32 0 0 1 56 32" stroke="black" stroke-width="4" fill="none" /><path id="level4" d="M14 38 A26 26 0 0 1 50 38" stroke="black" stroke-width="4" fill="none" /><path id="level3" d="M20 44 A18 20 0 0 1 44 44" stroke="black" stroke-width="4" fill="none" /><path id="level2" d="M26 50 A10 14 0 0 1 38 50" stroke="black" stroke-width="4" fill="none"/><circle id="level1" cx="32" cy="56" r="3" fill="black"/></svg>';
 
     function initWebSocket() {
         console.log('Trying to open a WebSocket connection...');
@@ -140,13 +141,13 @@
     }
     function onMessage(event) {
         var data = JSON.parse(event.data);
-        document.getElementById("devicename").innerHTML = data.Device.Name;
+        document.getElementById("devicename").innerHTML = data.Device.Name  +'   '+ wifiSvg;
         document.getElementById("packV").innerHTML = data.Pack.Voltage + 'V ';
         document.getElementById("packA").innerHTML = data.Pack.Current + 'A  ';
         document.getElementById("packP").innerHTML = Math.round(data.Pack.Power) + 'W  ';
         document.getElementById("packSOC").innerHTML = data.Pack.SOC + '%%';
         $('#packSOC').width(data.Pack.SOC + "%").attr('aria-valuenow', data.Pack.SOC);
-        document.getElementById("packRes").innerHTML = data.Pack.Remaining_mAh + 'mAh ';
+        document.getElementById("packRes").innerHTML = data.Pack.Remaining_Ah + 'Ah ';
 
         document.getElementById("cellH").innerHTML = data.Pack.High_CellNr + '↑' + data.Pack.High_CellV + 'V ';
         document.getElementById("cellL").innerHTML = data.Pack.Low_CellNr + '↓' + data.Pack.Low_CellV + 'V ';
@@ -163,7 +164,8 @@
         BarChart(data);
         alert(data);
 
-        if (data.Pack.Status == "offline") {
+
+        if (data.Pack.Status == "Offline") {
             document.getElementById("status").style.color = "red";
             document.getElementById("wakebms").style.display = '';
             for (var i = 0; i < dataFields.length; i++) {
@@ -181,6 +183,7 @@
         } else {
             relaisOutputActive.setAttribute('disabled', 'disabled');
         }
+        setWiFiSignal(data.Device.Wifi_RSSI);
     }
 
     function alert(data) {
@@ -238,6 +241,7 @@
         document.getElementById('relaisOutputActive').addEventListener('click', RelaisOutputSwitch);
         document.getElementById('wakebms').addEventListener('click', wakeBms);
         document.getElementById('ClickSOC').addEventListener('click', cellState);
+        document.getElementById('ClickSOC').addEventListener('dblclick',SetSOC);
     }
 
     function wakeBms() {
@@ -294,8 +298,8 @@
         var cellColor = [];
         var tmpCountV = 0;
         var tmpCountB = 0;
+
         for (let i = 0; i < tmpCellV.length; i++) {
-            if (i % 2 == 0) {
                 cellVoltages.push(tmpCellV[i]);
                 cellCount[tmpCountV] = tmpCountV + 1;
                 if (tmpCountV == dataObj.Pack.High_CellNr - 1) { cellColor[tmpCountV] = 'DarkBlue'; }
@@ -303,11 +307,6 @@
                 else { cellColor[tmpCountV] = '#0a58ca'; }
                 if (tmpCountV == dataObj.Pack.High_CellNr - 1) { cellColor[tmpCountV] = 'DarkBlue'; }
                 tmpCountV = tmpCountV + 1;
-            } else {
-                cellBalances.push(tmpCellV[i]);
-                if (tmpCellV[i] == true) { cellColor[tmpCountB] = 'BlueViolet'; }
-                tmpCountB = tmpCountB + 1;
-            }
         }
         if (createBarChart == true) {
             createBarChart = false;
@@ -354,12 +353,41 @@
         }
     }
 
+    function SetSOC() {
+       newSOC = prompt ("Set the SOC to", ($('#packSOC').attr('aria-valuenow')));
+       if (newSOC != null) {
+        var sendSOC = "setSOC_"+newSOC
+        console.log(sendSOC)
+        websocket.send(sendSOC);
+       }
+        
+    }
+
     function checkWS() {
-        if(websocket.readyState !== WebSocket.CLOSED)
-        {
+        if (websocket.readyState !== WebSocket.CLOSED) {
             websocket.send("ping");
         }
     }
+    const minRSSI = -85, maxRSSI = -60;
+    function setWiFiSignal(rssi) {
+    const lv = ['level1','level2','level3','level4','level5'],
+          c = ['red','orange','gold','yellowgreen','green'],
+          p = Math.max(0, Math.min(100, Math.round((rssi - minRSSI) * 100 / (maxRSSI - minRSSI)))),
+          lvl = Math.floor(p / 25),
+          col = c[Math.min(lvl, 4)];
+
+    const svg = document.querySelector(".wifi-symbol");
+    if (svg) {
+      const title = svg.querySelector("title");
+      if (title) title.textContent = p + "%% Strength";
+    }
+
+    lv.forEach((id, i) => {
+      const e = document.getElementById(id);
+      if (e) (e.tagName === "circle" ? e.setAttribute("fill", i <= lvl ? col : "#ccc")
+                                     : e.setAttribute("stroke", i <= lvl ? col : "#ccc"));
+    });
+  }
 </script>
 
 %pre_foot_template%
