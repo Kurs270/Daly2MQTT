@@ -5,6 +5,11 @@ https://github.com/softwarecrash/DALY2MQTT
 #include "daly.h"
 SoftwareSerial myPort;
 extern void writeLog(const char* format, ...);
+
+#ifdef USE_SERIAL_FORWARDER
+CSerialForwarder forwarder( 81 );
+#endif
+
 //----------------------------------------------------------------------
 // Public Functions
 //----------------------------------------------------------------------
@@ -14,6 +19,9 @@ DalyBms::DalyBms(int rx, int tx)
     soft_rx = rx;
     soft_tx = tx;
     this->my_serialIntf = &myPort;
+    #ifdef USE_SERIAL_FORWARDER
+    m_pForwarder = &forwarder;
+    #endif
 }
 
 bool DalyBms::Init()
@@ -29,6 +37,13 @@ bool DalyBms::Init()
     // Initialize the serial link to 9600 baud with 8 data bits and no parity bits, per the Daly BMS spec
     this->my_serialIntf->begin(9600, SWSERIAL_8N1, soft_rx, soft_tx, false);
 
+#ifdef USE_SERIAL_FORWARDER
+    if ( m_pForwarder )
+    {
+        forwarder.Setup();
+    }
+#endif    
+
     memset(this->my_txBuffer, 0x00, XFER_BUFFER_LENGTH);
     clearGet();
     return true;
@@ -36,6 +51,13 @@ bool DalyBms::Init()
 
 bool DalyBms::loop()
 {
+#ifdef USE_SERIAL_FORWARDER
+    if ( m_pForwarder )
+    {
+        if ( m_pForwarder->Loop( *my_serialIntf ))
+            return true;
+    }
+#endif
     if (millis() - previousTime >= DELAYTINME)
     {
         switch (requestCounter)

@@ -3,6 +3,13 @@ DALY2MQTT Project
 https://github.com/softwarecrash/DALY2MQTT
 */
 #include "SoftwareSerial.h"
+
+#define USE_SERIAL_FORWARDER
+
+#ifdef USE_SERIAL_FORWARDER
+#include "serialForwarder.h"
+#endif 
+
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
@@ -391,6 +398,10 @@ private:
      * @brief Buffer filled with data from the BMS
      */
     uint8_t my_rxBuffer[XFER_BUFFER_LENGTH];
+
+#ifdef USE_SERIAL_FORWARDER
+    CSerialForwarder *m_pForwarder;
+#endif
 
 
 uint8_t my_rxFrameBuffer[XFER_BUFFER_LENGTH*12];
