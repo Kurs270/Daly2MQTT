@@ -78,6 +78,13 @@ DeviceAddress tempDeviceAddress;
 
 ADC_MODE(ADC_VCC);
 
+// --- WiFi watchdog (non-blocking) ---
+static uint32_t g_lastReconnectTry = 0;
+static uint8_t g_retries = 0;
+
+static const uint32_t WIFI_RECONNECT_INTERVAL_MS = 15UL * 1000UL;
+static const uint32_t WIFI_FORCE_REBOOT_MS = 5UL * 60UL * 1000UL;
+
 const char *PARAM_MESSAGE PROGMEM = "message";
 
 //----------------------------------------------------------------------
@@ -329,6 +336,32 @@ bool resetCounter(bool count)
   }
   writeLog("Bootcount:%d Reboot reason:%d", bootcount, ESP.getResetInfoPtr()->reason);
   return true;
+}
+
+void checkWiFiAndMaybeReboot()
+{
+  const uint32_t now = millis();
+
+  if (WiFi.status() == WL_CONNECTED && WiFi.localIP()[0] != 0) {
+    lastWifiOK = now;
+    return;
+  }
+
+  if (now - g_lastReconnectTry >= WIFI_RECONNECT_INTERVAL_MS) {
+    g_lastReconnectTry = now;
+    g_retries++;
+    writeLog("[wifi] reconnect try #%u ...", g_retries);
+    WiFi.reconnect();
+  }
+
+  const WiFiMode_t mode = WiFi.getMode();
+  const bool apActive = (mode == WIFI_AP || mode == WIFI_AP_STA);
+
+  if (!apActive && (now - lastWifiOK >= WIFI_FORCE_REBOOT_MS)) {
+    writeLog("[wifi] offline > %lu ms -> reboot", (unsigned long)WIFI_FORCE_REBOOT_MS);
+    delay(50);
+    ESP.restart();
+  }
 }
 
 void setup()
@@ -693,6 +726,7 @@ void loop()
         }
       }
     }
+    checkWiFiAndMaybeReboot();
     bms.loop();
     wakeupHandler(false);
     relaisHandler();
@@ -1195,3 +1229,4 @@ void writeLog(const char *format, ...)
   DBG_PRINTLN(msg);
   DBG_WEBLN(msg);
 }
+
