@@ -73,5 +73,11 @@ String htmlProcessor(const String &var)
         return (_settings.data.staticSN);
     if (var == F("pre_static_dns"))
         return (_settings.data.staticDNS);
+    if (var == F("pre_head_inc"))
+#ifdef USE_LOCAL_LIBS
+        return (FPSTR(HTML_HEAD_INC_LOCAL));
+#else
+        return (FPSTR(HTML_HEAD_INC));
+#endif       
     return String();
 }
