@@ -4,9 +4,9 @@ https://github.com/softwarecrash/DALY2MQTT
 */
 #include "SoftwareSerial.h"
 
-#define USE_SERIAL_FORWARDER
+// #define D2MQTT_USE_SERIAL_FORWARDER
 
-#ifdef USE_SERIAL_FORWARDER
+#ifdef D2MQTT_USE_SERIAL_FORWARDER
 #include "serialForwarder.h"
 #endif 
 
@@ -407,7 +407,7 @@ private:
      */
     uint8_t my_rxBuffer[XFER_BUFFER_LENGTH];
 
-#ifdef USE_SERIAL_FORWARDER
+#ifdef D2MQTT_USE_SERIAL_FORWARDER
     CSerialForwarder *m_pForwarder;
 #endif
 
