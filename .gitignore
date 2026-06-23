@@ -6,4 +6,7 @@
 .vscode
 .firmware
 lib/DalySerial/
+
 src/html.h
+src/jslibs
+src/jslibs/*.h
