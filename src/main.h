@@ -53,6 +53,7 @@ https://github.com/softwarecrash/DALY2MQTT
 #define DBG_PRINTLN(...) DEBUG_SERIAL.println(__VA_ARGS__)
 #define DBG_WEBLN(...) webSerial.println(__VA_ARGS__)
 
+uint32_t lastWifiOK = 0;
 
 /**
  * @brief function for uart callback to prozess avaible data
@@ -159,3 +160,5 @@ static const char *const haControlDescriptor[][4]{
     {"Pack_DischargeFET", "toggle-switch-off", "", ""},
     //{"Pack_SOC", "toggle-switch-off", "", ""},
     {"Pack_Relais", "toggle-switch-off", "", ""}};
+
+void checkWiFiAndMaybeReboot();
