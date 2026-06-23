@@ -22,12 +22,12 @@ https://github.com/softwarecrash/DALY2MQTT
 #include <NonBlockingDallas.h>
 #include "Settings.h"
 
-#define USE_LOCAL_LIBS
+//#define D2MQTT_USE_LOCAL_LIBS
 
 #include "html.h"
 #include "htmlProzessor.h" // The html Prozessor
 
-#ifdef USE_LOCAL_LIBS
+#ifdef D2MQTT_USE_LOCAL_LIBS
 #include "jslibs/bootstrap_bundle_min_js.gz.h"
 #include "jslibs/bootstrap_icons_css.gz.h"
 #include "jslibs/bootstrap_min_css.gz.h"
@@ -469,7 +469,7 @@ void setup()
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
       request->send(response); });
 
-#ifdef USE_LOCAL_LIBS
+#ifdef D2MQTT_USE_LOCAL_LIBS
     server.on("/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebServerResponse *response = request->beginResponse_P( 200, "text/javascript", bootstrap_bundle_min_js, bootstrap_bundle_min_js_len, nullptr );
